@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+  traefikv2:
+    image: "traefik:v2.0.4"
+    container_name: traefikv2
+    volumes:
+      -  /var/run/docker.sock:/var/run/docker.sock  # used to pick up new running containers on this node
+      -  ${PWD}/traefikv2.toml:/etc/traefik/traefik.toml
+      -  ${PWD}/dynamic.toml:/dynamic.toml
+      -  ${PWD}/acme.json:/acme.json
+    ports:
+      - "8080:8080"
+      - "443:443"
+      - "80:80"
+    networks:
+      - traefik-net
+    environment:
+      - GODADDY_API_KEY=9QCA7Z7xbx4_34UcdiU3jYrLFLmKa3gUWV
+      - GODADDY_API_SECRET=57FeXFmmbrszgX8pV9ZR3d
+#      - GODADDY_API_KEY=<put your godaddy api key here if using godaddy>
+#      - GODADDY_API_SECRET=<put your godaddy api secret here if using godaddy>
+      - DO_AUTH_TOKEN=<put your digital ocean token here if using DO>
+
+networks:
+  traefik-net:
+    external: true

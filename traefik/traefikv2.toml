@@ -1,0 +1,67 @@
+[Global]
+checkNewVersion = true
+sendAnonymousUsage = true
+
+[log]
+#  filePath = "/var/log/traefik/tl.txt" # use docker logs -f traefikv2
+  level = "DEBUG"
+  format = "common"
+
+[accessLog]
+#  filePath = "/var/log/traefik/al.txt"
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+  [entryPoints.web-secure]
+    address = ":443"
+# define the entry port but do not set the port so we can use port 80
+# defining this here prevents it from being auto-generated
+  [entryPoints.traefik]
+    address = ":8080"
+
+[providers]
+[providers.file]
+  filename = "dynamic.toml"
+  watch = true
+
+[providers.docker]
+  endpoint = "unix:///var/run/docker.sock"
+  exposedByDefault = false
+  network = "traefik-net"
+
+
+# you can have multiple resolves on different name servers
+# here we have two examples "first" and "second"
+# When using the DNS challenge, The acme client will contact your DNS provider and make a TXT record entry which a
+# hash value. It will then wait to verify that it can look this up via the name server to make sure then entry was made
+# At that point it will then generate a certificate and delete the TXT record if it can. Some DNS providers have issues
+# when deleting but it not a long term issue and you can delete these on your own later via the DNS provider website admin.
+# in order to force a new certificate to be generated you must clear out acme.json to 0 bytes OR delete the entry
+# in acme.json that hold the json body for that domain you want regenerated.
+[certificatesResolvers]
+  [certificatesResolvers.first]
+    [certificatesResolvers.first.acme]
+      email = "admin@yourdomainname.com.com"
+      storage = "acme.json"
+# use this staging server till we figure this out then we can delete
+      caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+    [certificatesResolvers.first.acme.dnschallenge]
+      provider = "godaddy"
+      delayBeforeCheck = 30  # this will wait 30 secs before let's encrypt will verify the entry has been made
+  # use this if your are going to digital ocean for name server
+  [certificatesResolvers.second]
+    [certificatesResolvers.second.acme]
+      email = "admin@yourdomainname.com.com"
+      storage = "acme.json"
+# use this staging server till we figure this out then we can delete
+#      caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+    [certificatesResolvers.second.acme.dnschallenge]
+      provider = "digitalocean"
+      delayBeforeCheck = 30
+
+# Enable web configuration backend
+[api]
+  insecure = true
+  dashboard = true
+  debug=true

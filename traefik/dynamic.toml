@@ -1,0 +1,48 @@
+
+[http.routers]
+# catch all http redirect
+  [http.routers.redirecttohttps]
+    entryPoints = ["web"]
+    middlewares = ["redirecthttps"]
+    rule = "HostRegexp(`{host:.+}`)"
+    service = "noop"  # bogus service but needs to be here
+    [http.routers.redirecttohttps.tls]
+      certResolver = "first"
+      [[http.routers.redirecttohttps.tls.domains]]   # multiple domain names if needed for testing environments
+        main = "yourdomainname.com.com" # for dns challenge
+        sans = ["*.yourdomainname.com.com"] # for dns challenge
+# ad as many more wildcard domains that you want
+#      [[http.routers.redirecttohttps.tls.domains]]
+#        main = "qa.yourdomainname.com" # for dns challenge
+#        sans = ["*.qa.yourdomainname.com"] # for dns challenge
+#      [[http.routers.redirecttohttps.tls.domains]]
+#        main = "ci.yourdomainname.com" # for dns challenge
+#        sans = ["*.ci.yourdomainname.com"] # for dns challenge
+#      [[http.routers.dashboard.tls.domains]]
+#        main = "stage.yourdomainname.com" # for dns challenge
+#        sans = ["*.stage.yourdomainname.com"] # for dns challenge
+
+  [http.routers.dashboard]
+    entryPoints = ["web-secure"]
+    rule = "Host(`monitor.yourdomainname.com.com`)"
+    middlewares = ["auth"]
+    service = "api@internal"
+    [http.routers.dashboard.tls]
+      certResolver = "first"
+
+[http.services]
+  # noop service, the URL will be never called, to handle the catchall redirect
+  [http.services.noop.loadBalancer]
+    [[http.services.noop.loadBalancer.servers]]
+      url = "http://192.168.0.1"
+
+[http.middlewares]
+  [http.middlewares.auth.basicAuth]
+     users = [
+         "admin:$apr1$bQA77b71$XPeHT17d7P2NsJDhtYMAy0",
+     ]
+
+  [http.middlewares.redirecthttps.redirectScheme]
+    scheme = "https"
+    permanent = true
+
