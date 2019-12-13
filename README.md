@@ -1,4 +1,4 @@
-# traefik-demo-with-app
+# traefik-demo-with-app with renewable Let's Encrypt certificates
 
 a project that will show a working traefik reverse proxy on a virtual private server. It will use Let's Encrypt
 to generate wildcard domain certificates for this as well. 
