@@ -3,12 +3,18 @@
 a project that will show a working traefik reverse proxy on a virtual private server. It will use Let's Encrypt
 to generate wildcard domain certificates for this as well. 
 We are using Version 2 of the Traefik API which is completely different then ALL 1.X versions so this ONLY 
-applies to version to of the Traefik executable.
+applies to version 2 of the Traefik executable.
 
 This example project is meant as a Guideline project to get you started and will not run "As-Is".   
 
-You can add as many external docker-compose project as you want as long as they are run on the same server 
-just copy the exampleapp directory and modifed to run ANY docker image.
+You can add as many external docker-compose project as you want as long as they are run on the same server. 
+Just copy the exampleapp directory and modify the docker-compose.yml to run ANY docker image.
+
+Using Traefik as the reverse proxy allows you to handle incoming requests on port 80 and then have all those
+request re-directed to SSL, port 443/https. Adding new backends requires a docker-compose.yml for each application
+and allows it to dynamically be added to the proxy. Incoming proxy rules can be defined in many different ways and with
+the additional Let's Encrypt configuration you will have valid Certificates created and renewed every 90 days or so
+without any additional cost.
 
 
 
@@ -18,7 +24,7 @@ just copy the exampleapp directory and modifed to run ANY docker image.
 3) This project requires your to change the configuration everywhere there is a ***yourdomainname.com*** to the domain
    you are working with. Search and replace should work well
 
-## VPS Virtual Private Server Example
+##Example
 
 This will deploy the traefik V2 to a host either local or on a remote virtual server. It will then listen for new containers to be 
 started and route as needed via the settings in the app container's docker-compose.yml.  
@@ -36,13 +42,13 @@ pass: admin123
 
 Required
 1) API Key to your DNS server or AUTH Token
-2) acme.json in 644 mode. in bash terminal  touch acme.json ; chmod 600 acme.json
+2) acme.json in 644 mode. To create one in bash terminal % touch acme.json ; chmod 600 acme.json
 3) external docker network   **docker network create traefik-net** should return a hash when done
 
 
 
 ### Testing this locally
-add your hostnames to you local /etc/hosts
+add your hostnames to you local /etc/hosts   
 127.0.0.1        monitor.yourdomainname.com example.yourdomainname.com   
 
  
@@ -61,10 +67,15 @@ add your hostnames to you local /etc/hosts
 
 goto http://monitor.yourdomainname.com  this should redirect in browser to https://monitor.yourdomainname.com
 
-This should load the traefik-admin after it load the certificates about 30 secs first time
+This should load the traefik-admin after it generates/loads the certificates. about 30 secs when it needs to 
+generate a new certificate. 
  
-executing docker logs traefikv2 should give you and example of whats going on with the certs. The traefikv2.toml
-is configured for DEBUG mode to start out. Change this to INFO later   
+executing 
+```bash
+% ocker logs traefikv2
+```
+should give you an example of whats going on with the certs. The traefikv2.toml
+is configured for DEBUG mode to start out. Change this to INFO later.  
 
  [log]   
    level = "DEBUG"   
@@ -148,7 +159,8 @@ NOTE: the included acme-example-generated.json is NOT valid. Its just an example
 
 
 curl to http://example.yourdomainname.com should redirect to https://example.yourdomainname.com
-If you are using the staging Let's encrypt server you will get a Certificate Exception
+If you are using the staging Let's encrypt server you will get a Certificate Exception when browing to the webpage.   
+
 Commenting out the Server URL for certificates should fix this AFTER you delete all the data
 in the current acme.json file. Let's encrypt has a rate limit on the production server so you do not want
 to do you initial testing with production. Using staging server URL first.   
@@ -167,7 +179,7 @@ Thank you for using nginx.
 ## NON DNS challenge Method for Let's Encrypt
 
 Change the traefikv2.toml file section to these types if you do not want to use DNS challenge and wildcard certificates
-These will NOT allow wildcard certifcates to be used
+These configs below will NOT allow wildcard certifcates to be used
 
 **HTTP-Challenge**
 [certificatesResolvers]
@@ -191,6 +203,6 @@ These will NOT allow wildcard certifcates to be used
 When using the DNS challenge, The acme client will contact your DNS provider and make a TXT record entry, which a 
 hash value. It will then wait (controlled by delayBeforeCheck in traefikv2.toml) to verify that it can look this up via the name server to make sure then entry was made
 At that point it will then generate a certificate and delete the TXT record if it can. Some DNS providers have issues
-when deleting but it not a long term issue and you can delete these on your own later via the DNS provider website admin.
+when deleting but it's not a long term issue and you can delete these on your own later via the DNS provider website admin.
 in order to force a new certificate to be generated you must clear out acme.json to 0 bytes OR delete the entry
 in acme.json that hold the json body for that domain you want regenerated.
