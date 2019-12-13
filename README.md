@@ -24,7 +24,7 @@ without any additional cost.
 3) This project requires your to change the configuration everywhere there is a ***yourdomainname.com*** to the domain
    you are working with. Search and replace should work well
 
-##Example
+## Example
 
 This will deploy the traefik V2 to a host either local or on a remote virtual server. It will then listen for new containers to be 
 started and route as needed via the settings in the app container's docker-compose.yml.  
@@ -41,7 +41,7 @@ pass: admin123
 ### you need control of a domain in order to do this
 
 Required
-1) API Key to your DNS server or AUTH Token
+1) API Key to your DNS server or AUTH Token. This was tested with godaddy. See there site to learn how to get API KEY etc.
 2) acme.json in 644 mode. To create one in bash terminal % touch acme.json ; chmod 600 acme.json
 3) external docker network   **docker network create traefik-net** should return a hash when done
 
@@ -61,7 +61,6 @@ add your hostnames to you local /etc/hosts
  from project main directory to make sure its not running
  % cd vps
  % docker-compose -p "traefik-demoapp" -f docker-compose.yml down 
-
  % docker-compose -p "traefik-demoapp" -f docker-compose.yml up  -d 
 ```
 
@@ -159,7 +158,7 @@ NOTE: the included acme-example-generated.json is NOT valid. Its just an example
 
 
 curl to http://example.yourdomainname.com should redirect to https://example.yourdomainname.com
-If you are using the staging Let's encrypt server you will get a Certificate Exception when browing to the webpage.   
+If you are using the staging Let's encrypt server you will get a Certificate Exception when browsing to the webpage.   
 
 Commenting out the Server URL for certificates should fix this AFTER you delete all the data
 in the current acme.json file. Let's encrypt has a rate limit on the production server so you do not want
@@ -201,7 +200,7 @@ These configs below will NOT allow wildcard certifcates to be used
       
 ### Notes on DNS Challenge
 When using the DNS challenge, The acme client will contact your DNS provider and make a TXT record entry, which a 
-hash value. It will then wait (controlled by delayBeforeCheck in traefikv2.toml) to verify that it can look this up via the name server to make sure then entry was made
+hash value. It will then wait (controlled by delayBeforeCheck in traefikv2.toml) to verify that it can look this up via the name server to make sure then entry was made. (You can actually see the changes if you monitor your DNS records on your DNS provider admin site.)
 At that point it will then generate a certificate and delete the TXT record if it can. Some DNS providers have issues
 when deleting but it's not a long term issue and you can delete these on your own later via the DNS provider website admin.
 in order to force a new certificate to be generated you must clear out acme.json to 0 bytes OR delete the entry
