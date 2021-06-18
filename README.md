@@ -71,7 +71,7 @@ generate a new certificate.
  
 executing 
 ```bash
-% ocker logs traefikv2
+% docker logs traefikv2
 ```
 should give you an example of whats going on with the certs. The traefikv2.toml
 is configured for DEBUG mode to start out. Change this to INFO later.  
